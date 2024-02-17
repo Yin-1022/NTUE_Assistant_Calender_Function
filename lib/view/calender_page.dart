@@ -11,12 +11,13 @@ class CalenderPage extends StatefulWidget
 }
 
 class _CalenderPageState extends State<CalenderPage> {
-  DateTime today = DateTime.now();
-  DateTime? _selectedDay;
-  late DateTime _showingDate = today;
+  DateTime _today = DateTime.now();
+  DateTime _selectedDay= DateTime.now();
+  DateTime _showingDate = DateTime.now();
+  List<Event> dayEvent = [];
   Map<DateTime, List<Event>> events = {};
-  TextEditingController _eventController = TextEditingController();
-  late final ValueNotifier<List<Event>> _selectedEvents;
+  final TextEditingController _eventController = TextEditingController();
+  late ValueNotifier<List<Event>> _selectedEvents;
 
   List<Event> _getEventsForDay(DateTime day)
   {
@@ -27,8 +28,8 @@ class _CalenderPageState extends State<CalenderPage> {
   void initState()
   {
     super.initState();
-    _selectedDay = today;
-    _selectedEvents = ValueNotifier(_getEventsForDay(_selectedDay!));
+    _showingDate = _today;
+    _selectedEvents = ValueNotifier(_getEventsForDay(_selectedDay));
   }
 
   @override
@@ -56,10 +57,10 @@ class _CalenderPageState extends State<CalenderPage> {
                           TableCalendar
                             (
                               locale: "en_US",
-                              headerStyle: HeaderStyle(formatButtonVisible: false, titleCentered: true),
+                              headerStyle: const HeaderStyle(formatButtonVisible: false, titleCentered: true),
                               firstDay: DateTime.utc(2020,1,1),
                               lastDay: DateTime.utc(2030,12,31),
-                              focusedDay: today,
+                              focusedDay: _today,
                               selectedDayPredicate: (day)
                               {
                                 return isSameDay(_selectedDay, day);
@@ -69,7 +70,7 @@ class _CalenderPageState extends State<CalenderPage> {
                                 setState((){});
                                 _selectedDay = selectedDay;
                                 _showingDate = selectedDay;
-                                today = focusedDay;
+                                _today = focusedDay;
                                 _selectedEvents.value = _getEventsForDay(selectedDay);
                               },
                             eventLoader: _getEventsForDay,
@@ -88,8 +89,8 @@ class _CalenderPageState extends State<CalenderPage> {
                               (
                                 children:
                                 [
-                                  Expanded(child: Text(_showingDate.toString().split(" ")[0],style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold))),
-                                  IconButton(onPressed: (){}, icon: Icon(Icons.notifications),),
+                                  Expanded(child: Text(_showingDate.toString().split(" ")[0],style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold))),
+                                  IconButton(onPressed: (){}, icon: const Icon(Icons.notifications),),
                                   IconButton
                                     (
                                       onPressed: ()
@@ -102,10 +103,10 @@ class _CalenderPageState extends State<CalenderPage> {
                                               return AlertDialog
                                                 (
                                                   scrollable: true,
-                                                  title: Text("Event name"),
+                                                  title: const Text("Event name"),
                                                   content: Padding
                                                             (
-                                                              padding: EdgeInsets.all(8),
+                                                              padding: const EdgeInsets.all(8),
                                                               child: TextField
                                                                 (
                                                                   controller: _eventController,
@@ -115,20 +116,21 @@ class _CalenderPageState extends State<CalenderPage> {
                                                   [
                                                     ElevatedButton
                                                       (
-                                                        onPressed: ()
+                                                        onPressed: () async
                                                         {
-                                                          events.addAll({_selectedDay !: [Event(_eventController.text)]});
                                                           Navigator.of(context).pop();
-                                                          _selectedEvents.value = _getEventsForDay(_selectedDay!);
+                                                          dayEvent.add(Event(_eventController.text));
+                                                          events.addAll({_selectedDay : dayEvent});
+                                                          _selectedEvents.value = _getEventsForDay(_selectedDay);
                                                         },
-                                                        child: Text("Submit")
+                                                        child: const Text("Submit")
                                                     )
                                                   ],
                                                 );
                                             }
                                           );
                                       },
-                                      icon: Icon(Icons.add)
+                                      icon: const Icon(Icons.add)
                                     ),
                                 ],
                               ),
@@ -148,7 +150,7 @@ class _CalenderPageState extends State<CalenderPage> {
                                               {
                                                 return Container
                                                   (
-                                                    margin: EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                                                    margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                                                     decoration: BoxDecoration
                                                       (
                                                         border: Border.all(),
@@ -157,7 +159,7 @@ class _CalenderPageState extends State<CalenderPage> {
                                                     child: ListTile
                                                       (
                                                         onTap: () => print(""),
-                                                        title: Text('${value[index].title}'),
+                                                        title: Text(value[index].title),
                                                       ),
                                                   );
                                               }
